@@ -1,8 +1,4 @@
 PORT ?= 8000
-server:
-
-	rm -rf tmp/* public/*
-	RACK_ENV=development bundle exec rackup config.ru -p $(PORT)
 
 serve:
 	

@@ -1,4 +1,5 @@
 require('ember');
+require('ember-data/lib/main');
 require('ember-qunit/main').globalize();
 require('ember-qunit-utils');
 

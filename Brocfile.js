@@ -30,6 +30,7 @@ precompiler.prototype.module = createPrecompilerModule(compilerOutput, handlebar
 
 // pickFiles
 var app = match('app', 'app/**/*.js');
+var emberData = match('app', 'submodules/data/packages/*/lib/**/*.js');
 var emberResolver = match('app', 'submodules/ember-jj-abrams-resolver/packages/*/lib/core.js');
 var emberAmdLibs = match('app', 'submodules/ember.js/packages_es6/*/lib/**/*.amd.js');
 var emberLibs = match('app', 'submodules/ember.js/packages/{rsvp,metamorph}/lib/main.js');
@@ -85,8 +86,15 @@ handlebarsRuntime = selfExecuting(handlebarsRuntime);
 // app
 app = es6Filter(app, es6Options);
 
+// emberData
+emberData = es6Filter(emberData, function(filePath) {
+  return filePath.replace('app/submodules/data/packages/','')
+                 .replace(/.js$/, '')
+});
+
+
 // compose and build app.js
-var trees = [app, emberResolver, emberAmdLibs, emberLibs, emberMain, emberModules, handlebarsRuntime, jquery, templates];
+var trees = [app, emberData, emberResolver, emberAmdLibs, emberLibs, emberMain, emberModules, handlebarsRuntime, jquery, templates];
 
 // ember-qunit
 

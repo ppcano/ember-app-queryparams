@@ -1,4 +1,6 @@
+
 import 'app/templates';
+import 'ember-data/lib/main';
 import App from 'app/system/application';
 
 App.initializeAll();
