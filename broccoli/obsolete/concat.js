@@ -26,6 +26,7 @@ Filter.prototype.write = function (readTree, destDir) {
 
       var destPath = destDir + '/' + inputFile
       var srcPath = srcDir + '/' + inputFile
+      //console.log(srcPath);
 
       if (fs.lstatSync(srcPath).isFile()) { 
         var content = fs.readFileSync(srcPath)

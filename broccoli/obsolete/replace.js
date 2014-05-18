@@ -1,3 +1,5 @@
+// CHECK: https://github.com/outaTiME/broccoli-replace
+
 var BroccoliFilter = require('broccoli-filter');
 
 

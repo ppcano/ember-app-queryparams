@@ -1,3 +1,5 @@
+
+// we could use writeFile 
 var BroccoliFilter = require('broccoli-filter');
 var fs = require('fs');
 
