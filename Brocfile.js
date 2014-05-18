@@ -1,41 +1,51 @@
 var mergeTrees = require('broccoli-merge-trees'),
     es6Filter = require('broccoli-es6-module-transpiler'),
-    //defeatureifyFilter = require('./broccoli/defeatureify'),
     defeatureifyFilter = require('broccoli-defeatureify'),
     fs = require('fs'),
-    //replace = require('./broccoli/replace'),
     wrapFiles = require('broccoli-wrap'),
     match = require('./broccoli/match'),
-    precompiler = require('./broccoli/precompiler').Filter,
-    createPrecompilerModule = require('./broccoli/precompiler').CreatePrecompilerModule,
     iife = require('./broccoli/iife'),
-    emberTemplateCompiler = require('./broccoli/ember_template_compiler'),
     append = require('./broccoli/append'),
     concatFilter = require('./broccoli/obsolete/concat'),
-    //concatFilter = require('broccoli-concat'),
+    concatTreeFilter = require('broccoli-concat'),
+    removeFile = require('broccoli-file-remover'),
     pickFiles = require('broccoli-static-compiler');
 
+
+
+
+
+// --- create HandlebarsPrecompiler
+var templatePrecompiler = require('./broccoli/ember-template-precompiler');
+var inlineTemplatePrecompiler = require('./app/submodules/ember.js/lib/broccoli-ember-inline-template-precompiler');
+var generateTemplateCompiler  = require('./app/submodules/ember.js/lib/broccoli-ember-template-compiler-generator');
+
+//setup handlebars which is required for ember-template-compiler
+var handlebars = match('app', 'vendor/handlebars-v1.3.0.js');
+handlebars = append(handlebars, {before: "function require() {\n", after: "return Handlebars;}\n"});
+
+
+var templateCompilerTree = pickFiles('app/submodules/ember.js/packages_es6/ember-handlebars-compiler/lib', {
+  files: ['main.js'],
+  srcDir: '/',
+  destDir: '/'
+});
+var templateCompilerFile = 'ember-template-compiler.js';
+templateCompilerTree = generateTemplateCompiler(templateCompilerTree, { srcFile: 'main.js'});
+templateCompilerTree = mergeTrees([templateCompilerTree, handlebars]);
+templateCompilerTree = concatFilter(templateCompilerTree, templateCompilerFile);
+
+
+
 var runningTest = process.env.RUNNING_TEST === 'true';
-
-
-// This file creation is only done at the design process
-// so live-reloading do not work
-var compilerInput = 'app/submodules/ember.js/packages_es6/ember-handlebars-compiler/lib/main.js';
-var compilerOutput = 'tmp/ember-handlebars-compiler.js';
-emberTemplateCompiler(compilerInput, compilerOutput);
-
-// setup precompiler
-handlebarsPath = "app/vendor/handlebars-v1.3.0.js";
-precompiler.prototype.module = createPrecompilerModule(compilerOutput, handlebarsPath);
 
 
 // pickFiles
 var app = match('app', 'app/**/*.js');
 var emberData = match('app', 'submodules/data/packages/*/lib/**/*.js');
 var emberResolver = match('app', 'submodules/ember-jj-abrams-resolver/packages/*/lib/core.js');
-var emberAmdLibs = match('app', 'submodules/ember.js/packages_es6/*/lib/**/*.amd.js');
-var emberLibs = match('app', 'submodules/ember.js/packages/{rsvp,metamorph}/lib/main.js');
-var emberModules = match('app', 'submodules/ember.js/packages_es6/*/lib/**/!(*.amd).js');//https://github.com/isaacs/node-glob/issues/62
+var emberVendoredPackages = match('app', 'submodules/ember.js/packages/{backburner,metamorph,route-recognizer,router,rsvp}/lib/main.js');
+var emberModules = match('app', 'submodules/ember.js/packages_es6/*/lib/**/!(*.amd).js');
 var handlebarsRuntime = match('app', 'vendor/handlebars.runtime-v1.3.0.js');
 var jquery = match('app', 'vendor/jquery-1.9.1.js');
 var templates = match('app', 'templates/**/*.handlebars');
@@ -56,16 +66,18 @@ var es6Options = { moduleName: function(filePath) {
 
 
 
-// templates
-templates = precompiler(templates, {templateNameGenerator: function(filePath) {
+templates = mergeTrees([templates, templateCompilerTree]);
+templates = templatePrecompiler(templates, {templateName: function(filePath) {
   return filePath.replace('app/templates/','')
                  .replace(/\.[^/.]+$/, "");
 }});
+templates = removeFile(templates, {srcFile: templateCompilerFile});
+
 
 templates = concatFilter(templates, 'templates.js');
 //templates = concatFilter(templates, {inputFiles: ['**/*.handlebars'],outputFile:'/templates.js'});
 
-templates = append(templates, {before: true, content: "import Ember from \"ember-metal/core\";\n import \"ember\";"});
+templates = append(templates, {before: "import Ember from \"ember-metal/core\";\n import \"ember\";"});
 templates = es6Filter(templates, {moduleName: 'app/templates'});
 
 // emberModules
@@ -81,13 +93,15 @@ defeatureifyOptions = {
 };
 
 emberModules = defeatureifyFilter(emberModules, defeatureifyOptions);
-emberModules = precompiler(emberModules);
 
-// emberMain
-//emberMain = es6Filter(emberMain, es6Options);
+
+emberModules = mergeTrees([emberModules, templateCompilerTree]);
+emberModules = inlineTemplatePrecompiler(emberModules);
+emberModules = removeFile(emberModules, {srcFile: templateCompilerFile});
+
 
 // handlebarsRuntime
-handlebarsRuntime = append(handlebarsRuntime, {before: false, content: "\nwindow.Handlebars = Handlebars\n"});
+handlebarsRuntime = append(handlebarsRuntime, {after: "\nwindow.Handlebars = Handlebars\n"});
 handlebarsRuntime = iife(handlebarsRuntime);
 
 // app
@@ -101,7 +115,7 @@ emberData = es6Filter(emberData, { moduleName: function(filePath) {
 
 
 // compose and build app.js
-var trees = [app, emberData, emberResolver, emberAmdLibs, emberLibs, emberMain, emberModules, handlebarsRuntime, jquery, templates];
+var trees = [app, emberData, emberResolver, emberVendoredPackages, emberMain, emberModules, handlebarsRuntime, jquery, templates];
 
 // ember-qunit
 
@@ -138,11 +152,14 @@ if ( runningTest ) {
 
 
 }
-trees = new mergeTrees(trees)
+trees = mergeTrees(trees)
 trees = concatFilter(trees, 'app.js');
 //trees = concatFilter(trees, {inputFiles: ['**/*.js'],outputFile:'/app.js'});
 trees = iife(trees);
-trees = append(trees, {before: true, path: "app/submodules/ember.js/packages/loader/lib/main.js"});
+
+trees = mergeTrees([trees, match('app', 'submodules/ember.js/packages/loader/lib/main.js')]);
+trees = concatFilter(trees, 'app.js');
+
 
 
 var publicFiles;
@@ -164,5 +181,5 @@ if ( runningTest ) {
   trees = [publicFiles, trees]
 }
 
-trees = new mergeTrees(trees)
+trees = mergeTrees(trees)
 module.exports = trees;

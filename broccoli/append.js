@@ -19,14 +19,7 @@ function Filter (inputTree, options) {
   if (this.options.targetExtension != null) this.targetExtension = this.options.targetExtension
 
   this.before = options.before;
-  
-  var content;
-  if ( options.path ) {
-    content = fs.readFileSync(options.path);
-  } else {
-    content = options.content;
-  }
-  this.content = content;
+  this.after = options.after;
 
 }
 
@@ -34,5 +27,12 @@ Filter.prototype.extensions = ['js']
 
 
 Filter.prototype.processString = function (fileContents, filePath) {
-  return this.before ? this.content+fileContents : fileContents+this.content;
+
+  var result = '';
+
+  if ( this.before ) result += this.before;
+  result += fileContents;
+  if ( this.after ) result += this.after;
+
+  return result;
 };
