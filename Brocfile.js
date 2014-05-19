@@ -9,14 +9,11 @@ var mergeTrees = require('broccoli-merge-trees'),
     concatFilter = require('./broccoli/obsolete/concat'),
     concatTreeFilter = require('broccoli-concat'),
     removeFile = require('broccoli-file-remover'),
+    templateCompiler = require('broccoli-ember-hbs-template-compiler'),
     pickFiles = require('broccoli-static-compiler');
 
 
-
-
-
 // --- create HandlebarsPrecompiler
-var templatePrecompiler = require('./broccoli/ember-template-precompiler');
 var inlineTemplatePrecompiler = require('./app/submodules/ember.js/lib/broccoli-ember-inline-template-precompiler');
 var generateTemplateCompiler  = require('./app/submodules/ember.js/lib/broccoli-ember-template-compiler-generator');
 
@@ -45,43 +42,32 @@ var app = match('app', 'app/**/*.js');
 var emberData = match('app', 'submodules/data/packages/*/lib/**/*.js');
 var emberResolver = match('app', 'submodules/ember-jj-abrams-resolver/packages/*/lib/core.js');
 var emberVendoredPackages = match('app', 'submodules/ember.js/packages/{backburner,metamorph,route-recognizer,router,rsvp}/lib/main.js');
-var emberModules = match('app', 'submodules/ember.js/packages_es6/*/lib/**/!(*.amd).js');
 var handlebarsRuntime = match('app', 'vendor/handlebars.runtime-v1.3.0.js');
 var jquery = match('app', 'vendor/jquery-1.9.1.js');
 var templates = match('app', 'templates/**/*.handlebars');
-
-
 var emberMain = match('app', 'shims/ember.js');
 
 
-var es6Options = { moduleName: function(filePath) {
-                    return filePath.replace('app/app', 'app')
-                                   .replace('app/submodules/ember.js/packages/','')
-                                   .replace('app/submodules/ember.js/packages_es6/','')
+
+// --- templates
+templates = templateCompiler(templates, {module: true});
+templates = es6Filter(templates, {moduleName: function(filePath) {
+                      return filePath.replace(/.js$/, '');
+}});
+
+// emberModules
+var emberModules = ['container','ember-application','ember-handlebars-compiler','ember-handlebars','ember-metal','ember-routing','ember-runtime','ember-views'];
+emberModules.push('ember-extension-support');
+emberModules.push('ember-debug');
+if (runningTest) emberModules.push('ember-testing');
+emberModules = match('app', "submodules/ember.js/packages_es6/{"+emberModules.join(',')+"}/lib/**/*.js");
+emberModules = es6Filter(emberModules, { moduleName: function(filePath) {
+                    return filePath.replace('app/submodules/ember.js/packages_es6/','')
                                    .replace('lib/','')
                                    .replace(/.js$/, '')
                                    .replace(/\/main$/, '');
-                  }};
-
-
-
-
-templates = mergeTrees([templates, templateCompilerTree]);
-templates = templatePrecompiler(templates, {templateName: function(filePath) {
-  return filePath.replace('app/templates/','')
-                 .replace(/\.[^/.]+$/, "");
 }});
-templates = removeFile(templates, {srcFile: templateCompilerFile});
 
-
-templates = concatFilter(templates, 'templates.js');
-//templates = concatFilter(templates, {inputFiles: ['**/*.handlebars'],outputFile:'/templates.js'});
-
-templates = append(templates, {before: "import Ember from \"ember-metal/core\";\n import \"ember\";"});
-templates = es6Filter(templates, {moduleName: 'app/templates'});
-
-// emberModules
-emberModules = es6Filter(emberModules, es6Options);
 
 
 var defeatureifyOptions = JSON.parse(fs.readFileSync('ember_features.json', 'utf8').toString());
@@ -105,7 +91,13 @@ handlebarsRuntime = append(handlebarsRuntime, {after: "\nwindow.Handlebars = Han
 handlebarsRuntime = iife(handlebarsRuntime);
 
 // app
-app = es6Filter(app, es6Options);
+app = es6Filter(app, { moduleName: function(filePath) {
+                    return filePath.replace('app/app', 'app')
+                                   .replace('lib/','')
+                                   .replace(/.js$/, '')
+                                   .replace(/\/main$/, '');
+}});
+
 
 // emberData
 emberData = es6Filter(emberData, { moduleName: function(filePath) {

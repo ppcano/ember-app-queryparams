@@ -11,24 +11,20 @@ define('ember', [], function() {
   require('ember-views');
   require('ember-routing');
   require('ember-application');
-  require('ember-extension-support');
 
+  var optionals = ['ember-extension-support', 'ember-debug', 'ember-testing'];
 
-  // ensure that the global exports have occurred for above
-  // required packages
-  requireModule('ember-metal');
-  requireModule('ember-runtime');
-  requireModule('ember-handlebars');
-  requireModule('ember-views');
-  requireModule('ember-routing');
-  requireModule('ember-application');
-  requireModule('ember-extension-support');
+  optionals.forEach(function(packageName) {
 
-  // do this to ensure that Ember.Test is defined properly on the global
-  // if it is present.
-  if (Ember.__loader.registry['ember-testing']) {
-    requireModule('ember-testing');
-  }
+    if (Ember.__loader.registry[packageName]) {
+      console.log('loading: '+ packageName);
+      require(packageName);
+    } else {
+      console.log('not loading: '+ packageName);
+    }
+
+  });
+
 
   return {
     'default': Ember

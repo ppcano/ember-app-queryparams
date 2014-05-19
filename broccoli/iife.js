@@ -1,8 +1,7 @@
-var BroccoliFilter = require('broccoli-filter');
-
+var AppendFilter = require('./append');
 
 module.exports = Filter;
-Filter.prototype = Object.create(BroccoliFilter.prototype);
+Filter.prototype = Object.create(AppendFilter.prototype);
 Filter.prototype.constructor = Filter;
 
 function Filter (inputTree, options) {
@@ -14,15 +13,7 @@ function Filter (inputTree, options) {
 
   if (this.options.extensions != null) this.extensions = this.options.extensions
   if (this.options.targetExtension != null) this.targetExtension = this.options.targetExtension
+
+  this.before = '(function() {\n';
+  this.after = '\n})();\n';
 }
-
-Filter.prototype.extensions = ['js']
-
-
-
-Filter.prototype.processString = function (fileContents, filePath) {
-  var result = "(function() {\n";
-  result += fileContents;
-  result += "\n})();\n";
-  return result;
-};
