@@ -3,7 +3,7 @@ PORT ?= 8000
 serve:
 	
 	rm -rf dist tmp
-	RUNNING_TEST=false broccoli serve --port 9000 
+	PORT=9000 RUNNING_TEST=false node server/server.js
 
 test:
 	

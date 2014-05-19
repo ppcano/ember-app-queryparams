@@ -7,6 +7,9 @@
   "license": "MIT",
 
   "devDependencies": {
+    "connect-livereload": "0.3.2",
+    "express": "^4.1.1",
+    "mime": "^1.2.11",
     "defeatureify": "^0.2.0",
     "quick-temp": "^0.1.0",
     "walk-sync": "^0.1.2",

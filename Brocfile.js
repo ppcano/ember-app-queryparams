@@ -46,7 +46,18 @@ var handlebarsRuntime = match('app', 'vendor/handlebars.runtime-v1.3.0.js');
 var jquery = match('app', 'vendor/jquery-1.9.1.js');
 var templates = match('app', 'templates/**/*.handlebars');
 var emberMain = match('app', 'shims/ember.js');
+var styles = match('styles', '**/*.css');
 
+
+//styles
+var styles = match('styles', '**/*.css');
+styles = concatFilter(styles, 'app.css');
+//styles = concatFilter(styles, {inputFiles: ['**/*.css'],outputFile:'/app.css'});
+//
+styles = pickFiles(styles, {
+  srcDir: '/',
+  files: ['app.css'],
+  destDir: '/source/' });
 
 
 // --- templates
@@ -123,9 +134,6 @@ if ( runningTest ) {
                                    }  
   });
 
-  //var emberQunit = match('app', 'submodules/ember-qunit/dist/named-amd/*.js');
-  //emberQunit = replace(emberQunit, { match: /\"ember-qunit\"/g, replacement: "\"ember-qunit\/main\"" } );
-
   trees.push(emberQunit);
 
   var testsUtils = match('app', 'tests/lib/**/*.js');
@@ -152,26 +160,29 @@ trees = iife(trees);
 trees = mergeTrees([trees, match('app', 'submodules/ember.js/packages/loader/lib/main.js')]);
 trees = concatFilter(trees, 'app.js');
 
+trees = pickFiles(trees, {
+  srcDir: '/',
+  files: ['app.js'],
+  destDir: '/source/' });
 
-
-var publicFiles;
 
 if ( runningTest ) {
 
-  publicFiles = pickFiles('app', {
+  var publicFiles = pickFiles('app', {
     srcDir: '/tests/public',
     destDir: '/' });
 
-  trees = [publicFiles, trees, emberTests];
+  trees = [publicFiles, trees, styles, emberTests];
 
 } else {
 
-  publicFiles = pickFiles('broccoli_public', {
+  var index = pickFiles('server', {
     srcDir: '/',
+    files: ['index.html'],
     destDir: '/' });
 
-  trees = [publicFiles, trees]
+  trees = [index, trees, styles];
+  
 }
 
-trees = mergeTrees(trees)
-module.exports = trees;
+module.exports = mergeTrees(trees);
