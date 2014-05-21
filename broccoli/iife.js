@@ -1,12 +1,12 @@
 var AppendFilter = require('./append');
 
-module.exports = Filter;
-Filter.prototype = Object.create(AppendFilter.prototype);
-Filter.prototype.constructor = Filter;
+module.exports = IIFE;
+IIFE.prototype = Object.create(AppendFilter.prototype);
+IIFE.prototype.constructor = IIFE;
 
-function Filter (inputTree, options) {
-  if (!(this instanceof Filter)) {
-    return new Filter(inputTree, options);
+function IIFE (inputTree, options) {
+  if (!(this instanceof IIFE)) {
+    return new IIFE(inputTree, options);
   }
   this.inputTree = inputTree;
   this.options = options || {};

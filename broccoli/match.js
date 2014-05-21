@@ -1,14 +1,14 @@
 var PickFiles = require('broccoli-static-compiler');
 
 
-module.exports = Filter
-Filter.prototype = Object.create(PickFiles.prototype)
-Filter.prototype.constructor = Filter
+module.exports = Match
+Match.prototype = Object.create(PickFiles.prototype)
+Match.prototype.constructor = Match
 
-function Filter(tree, match) {
+function Match(tree, match) {
   
   // If tree is empty, liveReload fails and `failed to stat` warning
-  if (!(this instanceof Filter)) return new Filter(tree, match)
+  if (!(this instanceof Match)) return new Match(tree, match)
   this.inputTree = tree
   this.options = {
     srcDir: '/',

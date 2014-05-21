@@ -4,13 +4,13 @@ var BroccoliFilter = require('broccoli-filter');
 var fs = require('fs');
 
 
-module.exports = Filter;
-Filter.prototype = Object.create(BroccoliFilter.prototype);
-Filter.prototype.constructor = Filter;
+module.exports = Append;
+Append.prototype = Object.create(BroccoliFilter.prototype);
+Append.prototype.constructor = Append;
 
-function Filter (inputTree, options) {
-  if (!(this instanceof Filter)) {
-    return new Filter(inputTree, options);
+function Append (inputTree, options) {
+  if (!(this instanceof Append)) {
+    return new Append(inputTree, options);
   }
   this.inputTree = inputTree;
   this.options = options || {};
@@ -23,10 +23,10 @@ function Filter (inputTree, options) {
 
 }
 
-Filter.prototype.extensions = ['js']
+Append.prototype.extensions = ['js']
 
 
-Filter.prototype.processString = function (fileContents, filePath) {
+Append.prototype.processString = function (fileContents, filePath) {
 
   var result = '';
 

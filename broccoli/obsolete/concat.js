@@ -4,17 +4,17 @@ var fs = require('fs')
 
 
 // TODO: accept array of Trees or individuals
-module.exports = Filter
-Filter.prototype = Object.create(BroccoliWriter.prototype)
-Filter.prototype.constructor = Filter
+module.exports = Concat
+Concat.prototype = Object.create(BroccoliWriter.prototype)
+Concat.prototype.constructor = Concat
 
-function Filter(inputTree, options) {
-  if (!(this instanceof Filter)) return new Filter(inputTree, options)
+function Concat(inputTree, options) {
+  if (!(this instanceof Concat)) return new Concat(inputTree, options)
   this.inputTree = inputTree
   this.output = options
 }
 
-Filter.prototype.write = function (readTree, destDir) {
+Concat.prototype.write = function (readTree, destDir) {
 
   var output = destDir+'/'+this.output;
   return readTree(this.inputTree).then(function (srcDir) {
