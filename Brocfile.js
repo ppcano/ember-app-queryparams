@@ -6,11 +6,21 @@ var mergeTrees = require('broccoli-merge-trees'),
     match = require('./broccoli/match'),
     iife = require('./broccoli/iife'),
     append = require('./broccoli/append'),
-    concatFilter = require('./broccoli/obsolete/concat'),
-    concatTreeFilter = require('broccoli-concat'),
+    concatFilter = require('broccoli-concat'),
+    writeFile = require('broccoli-file-creator'),
     removeFile = require('broccoli-file-remover'),
     templateCompiler = require('broccoli-ember-hbs-template-compiler'),
     pickFiles = require('broccoli-static-compiler');
+
+
+/*
+// appendedTrees: Should writeFile trees be used instead of appendFilter with processString??
+var iifeStart = writeFile('iife-start', '(function() {');
+var iifeStop  = writeFile('iife-stop', '})();');
+var globalHandlebars  = writeFile('global-handlebars', "\nwindow.Handlebars = Handlebars\n");
+var requireHandlebarsStart = writeFile('require-hs-start', 'function require() {\n');
+var requireHandlebarsStop  = writeFile('require-hs-stop', 'return Handlebars;}\n');
+*/
 
 
 // --- create HandlebarsPrecompiler
@@ -30,11 +40,14 @@ var templateCompilerTree = pickFiles('app/submodules/ember.js/packages_es6/ember
 var templateCompilerFile = 'ember-template-compiler.js';
 templateCompilerTree = generateTemplateCompiler(templateCompilerTree, { srcFile: 'main.js'});
 templateCompilerTree = mergeTrees([templateCompilerTree, handlebars]);
-templateCompilerTree = concatFilter(templateCompilerTree, templateCompilerFile);
+templateCompilerTree = concatFilter(templateCompilerTree, {inputFiles: ['**/*.js'], outputFile: '/'+templateCompilerFile});
 
 
 
 var runningTest = process.env.RUNNING_TEST === 'true';
+
+
+
 
 
 // pickFiles
@@ -42,7 +55,6 @@ var app = match('app', 'app/**/*.js');
 var emberData = match('app', 'submodules/data/packages/*/lib/**/*.js');
 var emberResolver = match('app', 'submodules/ember-jj-abrams-resolver/packages/*/lib/core.js');
 var emberVendoredPackages = match('app', 'submodules/ember.js/packages/{backburner,metamorph,route-recognizer,router,rsvp}/lib/main.js');
-var handlebarsRuntime = match('app', 'vendor/ember/handlebars.runtime-v1.3.0.js');
 var vendoredPackages = match('app', 'vendor/packages/*.js');
 var templates = match('app', 'templates/**/*.handlebars');
 var emberMain = match('app', 'shims/ember.js');
@@ -51,9 +63,8 @@ var styles = match('styles', '**/*.css');
 
 //styles
 var styles = match('styles', '**/*.css');
-styles = concatFilter(styles, 'app.css');
-//styles = concatFilter(styles, {inputFiles: ['**/*.css'],outputFile:'/app.css'});
-//
+styles = concatFilter(styles, {inputFiles: ['**/*.css'],outputFile:'/app.css'});
+
 styles = pickFiles(styles, {
   srcDir: '/',
   files: ['app.css'],
@@ -98,6 +109,7 @@ emberModules = removeFile(emberModules, {srcFile: templateCompilerFile});
 
 
 // handlebarsRuntime
+var handlebarsRuntime = match('app', 'vendor/ember/handlebars.runtime-v1.3.0.js');
 handlebarsRuntime = append(handlebarsRuntime, {after: "\nwindow.Handlebars = Handlebars\n"});
 handlebarsRuntime = iife(handlebarsRuntime);
 
@@ -147,18 +159,16 @@ if ( runningTest ) {
   trees.push(testsUtils);
 
   var emberTests = match('app', 'tests/tests/**/*_test.js');
-  emberTests = concatFilter(emberTests, 'tests.js');
-  //emberTests = concatFilter(emberTests, {inputFiles: ['**/*.js'], outputFile:'/tests.js'});
+  emberTests = concatFilter(emberTests, {inputFiles: ['**/*.js'], outputFile:'/tests.js'});
 
 
 }
 trees = mergeTrees(trees)
-trees = concatFilter(trees, 'app.js');
-//trees = concatFilter(trees, {inputFiles: ['**/*.js'],outputFile:'/app.js'});
+trees = concatFilter(trees, {inputFiles: ['**/*.js'],outputFile:'/tmp.js'});
 trees = iife(trees);
 
 trees = mergeTrees([trees, match('app', 'submodules/ember.js/packages/loader/lib/main.js')]);
-trees = concatFilter(trees, 'app.js');
+trees = concatFilter(trees, {inputFiles: ['**/*.js'],outputFile:'/app.js'});
 
 trees = pickFiles(trees, {
   srcDir: '/',

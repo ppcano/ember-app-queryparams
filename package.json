@@ -1,9 +1,9 @@
 {
-  "name": "emberhammerjs",
-  "description": "emberhammerjs",
+  "name": "ember-app",
+  "description": "ember-app",
   "version": "0.0.0",
   "private": true,
-  "author": "Jo Liss <joliss42@gmail.com>",
+  "author": "<ppcanodehuelva@gmail.com>",
   "license": "MIT",
 
   "devDependencies": {
@@ -21,8 +21,9 @@
     "resolve": "~0.6.2",
     "broccoli": "0.12.0",
     "broccoli-defeatureify": "~0.3.0",
-    "broccoli-concat": "0.0.6",
+    "broccoli-concat": "git://github.com/ppcano/broccoli-concat.git#should-not-stat-dir",
     "broccoli-file-remover": "~0.2.0",
+    "broccoli-file-creator": "~0.1.0",
     "broccoli-writer": "^0.1.1",
     "broccoli-kitchen-sink-helpers": "^0.2.0",
     "broccoli-es6-module-transpiler": "^0.1.0",
