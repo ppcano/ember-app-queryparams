@@ -18,7 +18,7 @@ var inlineTemplatePrecompiler = require('./app/submodules/ember.js/lib/broccoli-
 var generateTemplateCompiler  = require('./app/submodules/ember.js/lib/broccoli-ember-template-compiler-generator');
 
 //setup handlebars which is required for ember-template-compiler
-var handlebars = match('app', 'vendor/handlebars-v1.3.0.js');
+var handlebars = match('app', 'vendor/ember/handlebars-v1.3.0.js');
 handlebars = append(handlebars, {before: "function require() {\n", after: "return Handlebars;}\n"});
 
 
@@ -42,8 +42,8 @@ var app = match('app', 'app/**/*.js');
 var emberData = match('app', 'submodules/data/packages/*/lib/**/*.js');
 var emberResolver = match('app', 'submodules/ember-jj-abrams-resolver/packages/*/lib/core.js');
 var emberVendoredPackages = match('app', 'submodules/ember.js/packages/{backburner,metamorph,route-recognizer,router,rsvp}/lib/main.js');
-var handlebarsRuntime = match('app', 'vendor/handlebars.runtime-v1.3.0.js');
-var jquery = match('app', 'vendor/jquery-1.9.1.js');
+var handlebarsRuntime = match('app', 'vendor/ember/handlebars.runtime-v1.3.0.js');
+var vendoredPackages = match('app', 'vendor/packages/*.js');
 var templates = match('app', 'templates/**/*.handlebars');
 var emberMain = match('app', 'shims/ember.js');
 var styles = match('styles', '**/*.css');
@@ -118,7 +118,7 @@ emberData = es6Filter(emberData, { moduleName: function(filePath) {
 
 
 // compose and build app.js
-var trees = [app, emberData, emberResolver, emberVendoredPackages, emberMain, emberModules, handlebarsRuntime, jquery, templates];
+var trees = [app, emberData, emberResolver, emberVendoredPackages, emberMain, emberModules, handlebarsRuntime, vendoredPackages, templates];
 
 // ember-qunit
 
