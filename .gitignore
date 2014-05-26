@@ -2,7 +2,6 @@
 NERD_*
 tmp
 dist
-public
 node_modules
 *swp
 *.DS_Store
