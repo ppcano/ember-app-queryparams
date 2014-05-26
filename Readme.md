@@ -19,3 +19,6 @@ git submodule update --init
 - npm install
 - `make serve` or `make test` (run the test suite)
 
+
+"broccoli": "0.12.0",
+"broccoli": "git://github.com/ppcano/broccoli.git#should-not-stat-dir",

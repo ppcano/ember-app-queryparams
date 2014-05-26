@@ -1,3 +1,4 @@
+//var mergeTrees = require('./broccoli/broccoli-merge-trees'),
 var mergeTrees = require('broccoli-merge-trees'),
     es6Filter = require('broccoli-es6-module-transpiler'),
     defeatureifyFilter = require('broccoli-defeatureify'),
@@ -51,24 +52,15 @@ var runningTest = process.env.RUNNING_TEST === 'true';
 
 
 // pickFiles
-var app = match('app', 'app/**/*.js');
-var emberData = match('app', 'submodules/data/packages/*/lib/**/*.js');
-var emberResolver = match('app', 'submodules/ember-jj-abrams-resolver/packages/*/lib/core.js');
-var emberVendoredPackages = match('app', 'submodules/ember.js/packages/{backburner,metamorph,route-recognizer,router,rsvp}/lib/main.js');
-var vendoredPackages = match('app', 'vendor/packages/*.js');
-var templates = match('app', 'templates/**/*.handlebars');
-var emberMain = match('app', 'shims/ember.js');
-var styles = match('styles', '**/*.css');
+var app = match('app/app', '**/*.js');
+var emberData = match('app/submodules/data/packages', '*/lib/**/*.js');
+var emberResolver = match('app/submodules/ember-jj-abrams-resolver/packages', '*/lib/core.js');
+var emberVendoredPackages = match('app/submodules/ember.js/packages', '{backburner,metamorph,route-recognizer,router,rsvp}/lib/main.js');
+var vendoredPackages = match('app/vendor/packages', '*.js');
+var templates = match('app/templates', '**/*.handlebars');
+var emberMain = match('app/shims', 'ember.js');
 
 
-//styles
-var styles = match('styles', '**/*.css');
-styles = concatFilter(styles, {inputFiles: ['**/*.css'],outputFile:'/app.css'});
-
-styles = pickFiles(styles, {
-  srcDir: '/',
-  files: ['app.css'],
-  destDir: '/source/' });
 
 
 // --- templates
@@ -136,7 +128,7 @@ var trees = [app, emberData, emberResolver, emberVendoredPackages, emberMain, em
 
 if ( runningTest ) {
 
-  var emberQunit = match('app', 'submodules/ember-qunit/lib/**/*.js');
+  var emberQunit = match('app/submodules/ember-qunit/lib', '**/*.js');
   emberQunit = es6Filter(emberQunit, { transpilerOptions: {compatFix: true},
                                        moduleName: function(filePath) {
                                          return filePath.replace('app/submodules/', '')
@@ -148,7 +140,7 @@ if ( runningTest ) {
 
   trees.push(emberQunit);
 
-  var testsUtils = match('app', 'tests/lib/**/*.js');
+  var testsUtils = match('app/tests/lib', '**/*.js');
   testsUtils = es6Filter(testsUtils, {moduleName: function(filePath) {
                                          return filePath.replace('app/tests/', '')
                                            .replace('lib/','')
@@ -175,11 +167,21 @@ trees = pickFiles(trees, {
   files: ['app.js'],
   destDir: '/source/' });
 
+//styles
+var styles = match('styles', '**/*.css');
+styles = concatFilter(styles, {inputFiles: ['**/*.css'],outputFile:'/app.css'});
+
+styles = pickFiles(styles, {
+  srcDir: '/',
+  files: ['app.css'],
+  destDir: '/source/' });
+
 
 if ( runningTest ) {
 
   var publicFiles = pickFiles('app', {
     srcDir: '/tests/public',
+    files: ['*'],
     destDir: '/' });
 
   trees = [publicFiles, trees, styles, emberTests];
