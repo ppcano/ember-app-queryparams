@@ -1,3 +1,22 @@
 Index: {{text}}
+<br/>
+--!! QP
 
+<br/>
+cat: {{category}}
 
+<br/>
+
+day: {{day}}
+
+<br/>
+
+search: {{search}}
+
+<br/>
+
+<div {{action 'changeSearch'}} >Change Search</div>
+
+<br/>
+
+{{#link-to 'index' (query-params search='hola')}}Search hola{{/link-to}}

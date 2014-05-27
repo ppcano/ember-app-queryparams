@@ -4,7 +4,7 @@ import Resolver from 'app/system/resolver';
 import Router from 'app/system/router';
 
 
-Ember.ENV.LOG_MODULE_RESOLVER = true;
+Ember.ENV.LOG_MODULE_RESOLVER = false;
 
 var App = EmberApp.extend({
   LOG_ACTIVE_GENERATION: false,

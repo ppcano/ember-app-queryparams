@@ -1,1 +1,12 @@
 Account
+
+<br/>
+{{#link-to 'index' (query-params category="1" search=search )}}Index 1{{/link-to}}
+<br/>
+{{#link-to 'index' (query-params category="2" search='null' )}}Index 2{{/link-to}}
+<br/>
+{{#link-to 'index' (query-params category="3" search=null )}}Index 3{{/link-to}}
+<br/>
+
+
+<div {{action 'goToIndex'}} >Go To Index</div>
